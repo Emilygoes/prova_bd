@@ -1,0 +1,86 @@
+create  table endereco (
+id_endereco int primary key auto_increment,
+rua varchar (150) not null,
+numero varchar (10) not null,
+bairro varchar (80) not null,
+id_cliente int,
+
+foreign key (id_cliente) references cliente (id_cliente));
+
+create table categoria(
+id_categoria int primary key,
+nome varchar (80) not null,
+descricao varchar (200)
+);
+
+create table pizza (
+id_pizza int primary key auto_increment,
+nome varchar(200) not null,
+sabor varchar(80) not null,
+tamanho varchar(20) not null,
+preco decimal(8.2) not null,
+id_categoria int,
+
+foreign key (id_categoria) references categoria (id_categoria)
+);
+
+create table pedido (
+id_pedido int primary key auto_increment,
+data_pedido date not null,
+quantidade int not null,
+status_pedido varchar(30) not null,
+id_cliente int,
+id_pizza int,
+
+foreign key (id_cliente) references cliente (id_cliente),
+foreign key(id_pizza) references pizza (id_pizza)
+);
+
+create table log_pedidos (
+id_log int auto_increment primary key,
+id_pedido int,
+data_hora datetime,
+mensagem varchar (100)
+);
+
+select * from vw_pizza_cardapio where pizza = 'especial';
+
+create view vw_pizza_cardapio as 
+select p.nome, p.sabor, p.tamanho, p.preco as pizza,
+c.nome as categoria
+from pizza p inner join categoria c
+on p.id_categoria = c.id_categoria;
+
+delimiter $$
+
+create trigger trg_log_pedido
+after insert on pedido
+for each row
+begin
+
+insert into log_pedido (id_pedido, data_hora, mensagem)
+values (new.id_pedido, now (), 'novo pedido registrado');
+end $$
+
+
+update pedido set status_pedido = 'entregue' where id_cliente = 3;
+alter table pedido add column desconto decimal(5,2) default 0.00; 
+
+select count (*) from pedido;
+
+select c.nome as cliente,
+e.rua, e.numero, e.bairro
+from endereco e inner join
+cliente c on e.id_cliente = c.id_cliente;
+
+select * from cliente where cidade = 'videira';
+
+insert into pedido (data_pedido, quantidade, status_pedido, id_cliente, id_pizza) values ('2024-10-01', 1, 'entregue', 1, 2) , ('2024-10-03', 2 , 'entregue',2,1), ('2024-10-05', 1, 'Aguardando',3,3) , ('2024-10-07', 3, 'Em preparo',1,1) , ('2024-10-10', 1, 'Aguardando',4,4);
+
+insert into pizza (nome, sabor, tamanho, preco, id_categoria) values ('margheritta', 'Queijo e tomate', 'M', 35.90, 1), ('Portuguesa', 'Presunto e ovos', 'G', 49.90, 1), ('Frango BBQ', 'Frango e barbecue', 'G', 54.90, 2) , ( 'Chocolate', 'Nutella e morango', 'M', 42.00, 3);
+
+insert into endereco (rua, numero, bairro, id_cliente) values ('rua das flores', 123, 'Centro', 1) , ('Av.Brasil', 456, 'São Cristóvão', 2), ('rua XV de Novembro', 789,  'centro', 3) , ('Rua Tiradentes', 321, 'Vila Nova',4);
+
+insert into categoria (id_categoria, nome, descricao) values (1, 'tradicional', 'pizzas clássicas do cardápio'), (2, 'especial', 'pizzas premium com ingredientes diferenciados') , (3, 'doce', 'pizzas com recheio doce');
+
+insert into cliente (nome, telefone, email, cidade) values ('ana souza', '(49)9111-2233', 'ana@email.com', 'Videira'),('bruno lima', '(49)9444-5566', 'bruno@email.com', 'Caçador') , ('Carla Melo', '(49)9777-8899', 'carla@email.com', 'Fraiburgo'), ('Diego Costa', '(49)9000-1122', 'diego@email.com', 'Videira');
